@@ -113,7 +113,10 @@ exports.webhook = functions.https.onRequest((req,res) =>{
       var info = snapshot.child(String(userid)).val();
       if(msg == 'คู่มือ') {quickMessage(userid);}
       // else if(msg == 'แผนที่') {quickMap(userid);}
-      else if(msg == 'ชื่อ') {userStu = "ชื่อ : "+String(info.prefix_thai)+""+String(info.name_thai)+" "+String(info.surname_thai);}
+      else if(msg == 'ชื่อ') {
+        // userStu = "ชื่อ : "+String(info.prefix_thai)+""+String(info.name_thai)+" "+String(info.surname_thai);
+        infoma(agent,userStu); //เรียกใช้ func เพื่อส่ง agent เมื่อ "คำถาม" เข้าintentนั้นๆ
+      }
       else if(msg == 'รหัส') {userStu = "รหัสนิสิต : "+String(info.username);}
       else if(msg == 'คณะ') {userStu = "คณะ : "+String(info.faculty_thai)+" สาขา : "+String(info.program_thai);}
       /*
@@ -135,26 +138,20 @@ exports.webhook = functions.https.onRequest((req,res) =>{
         userStu ='กรุณาขอข้อมูลใหม่อีกครั้ง';
       }
 
-//ส่งagent/message ให้ผู้req 
-function location(agent) {
-  agent.add(userStu);  
-}
-
-  // run func dialogflow //ส่งให้ให้ผู้ req ผ่าน Intent 
-  let intentMap = new Map();
-  intentMap.set('map', location); //( intent,function ที่ต้องการใช้ )
-  agent.handleRequest(intentMap);
-
     }
+
+    //ส่งagent/message ให้ผู้req 
+      function infoma(agent,userStu){
+        agent.add(userStu);
+      }
+
+    // run func dialogflow //ส่งให้ให้ผู้ req ผ่าน Intent 
+      let intentMap = new Map();
+      intentMap.set('info', infoma); //( intent,function ที่ต้องการใช้ )
+      agent.handleRequest(intentMap);
+
       //ส่ง message
       sendMessage(userStu,token);
       quickMessage(userid);
   });
-
-  
-
-
-
-
-
 });
