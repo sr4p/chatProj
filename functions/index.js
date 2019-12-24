@@ -2,7 +2,7 @@ const functions = require('firebase-functions');
 const cors = require('cors')({origin: true});
 const request = require('request');
 const admin = require("firebase-admin");
-const { WebhookClient } = require('dialogflow-fulfillment');
+// const { WebhookClient } = require('dialogflow-fulfillment');
 const serviceAccount = require('./secret/service-account.json')
 const actionJson = require('./action');
 
@@ -17,6 +17,8 @@ const headersLogout = {
 };
 
 admin.initializeApp({
+  //dialogflow
+  // credential: admin.credential.applicationDefault(),
   credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://proj-ver1.firebaseio.com"
 });
@@ -91,9 +93,15 @@ const sendMessage = (msg,token) =>{
 
 //export func. ขึ้น firabase functions
 exports.webhook = functions.https.onRequest((req,res) =>{
-  const agent = new WebhookClient({request: req,response: res});
+  // const agent = new WebhookClient({request: req,response: res});
   let token = req.body.events[0].replyToken;
   let userid = req.body.events[0].source.userId;
+
+  // ดึงobject source จาก request
+  // let source = req.body.originalDetectIntentRequest.source;
+  //ดึงuserid line จาก source ที่มาจาก request
+  // let userid = req.body.originalDetectIntentRequest.source.userId;
+  
   let msg = req.body.events[0].message.text;
   let log = false;
   var db = admin.database();
@@ -114,8 +122,8 @@ exports.webhook = functions.https.onRequest((req,res) =>{
       if(msg == 'คู่มือ') {quickMessage(userid);}
       // else if(msg == 'แผนที่') {quickMap(userid);}
       else if(msg == 'ชื่อ') {
-        // userStu = "ชื่อ : "+String(info.prefix_thai)+""+String(info.name_thai)+" "+String(info.surname_thai);
-        infoma(agent,userStu); //เรียกใช้ func เพื่อส่ง agent เมื่อ "คำถาม" เข้าintentนั้นๆ
+        userStu = "ชื่อ : "+String(info.prefix_thai)+""+String(info.name_thai)+" "+String(info.surname_thai);
+        // infoma(agent,userStu); //เรียกใช้ func เพื่อส่ง agent เมื่อ "คำถาม" เข้าintentนั้นๆ
       }
       else if(msg == 'รหัส') {userStu = "รหัสนิสิต : "+String(info.username);}
       else if(msg == 'คณะ') {userStu = "คณะ : "+String(info.faculty_thai)+" สาขา : "+String(info.program_thai);}
@@ -141,17 +149,17 @@ exports.webhook = functions.https.onRequest((req,res) =>{
     }
 
     //ส่งagent/message ให้ผู้req 
-      function infoma(agent,userStu){
-        agent.add(userStu);
-      }
+      // function infoma(agent,userStu){
+      //   agent.add(userStu);
+      // }
 
     // run func dialogflow //ส่งให้ให้ผู้ req ผ่าน Intent 
-      let intentMap = new Map();
-      intentMap.set('info', infoma); //( intent,function ที่ต้องการใช้ )
-      agent.handleRequest(intentMap);
+      // let intentMap = new Map();
+      // intentMap.set('info', infoma); //( intent,function ที่ต้องการใช้ )
+      // agent.handleRequest(intentMap);
 
       //ส่ง message
       sendMessage(userStu,token);
-      quickMessage(userid);
+      // quickMessage(userid);
   });
 });
